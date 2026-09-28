@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f6f54">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Hidup Sehat Guru</title>
+<style>
+:root{--green:#1f6f54;--bg:#f4f7f5;--card:#fff;--text:#17352b;--muted:#718078;--line:#dfe8e3;--accent:#e8f4ee}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}
+header{background:var(--green);color:#fff;padding:22px 18px 26px;border-radius:0 0 24px 24px}header h1{margin:0;font-size:23px}header p{margin:5px 0 0;opacity:.9;font-size:13px}
+main{max-width:680px;margin:auto;padding:14px 14px 90px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px #17352b0d}
+.progress{height:12px;background:#e5ece8;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--green);width:0;transition:.25s}
+.progress-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}.section-title{font-size:16px;font-weight:800;margin:0 0 10px}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.item:last-child{border-bottom:0}
+.item input{width:21px;height:21px;accent-color:var(--green)}.done{text-decoration:line-through;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--accent);border-radius:14px;padding:12px}.stat b{display:block;font-size:20px}.stat small{color:var(--muted)}
+input[type=number]{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:16px}
+button{border:0;border-radius:10px;background:var(--green);color:#fff;padding:10px 14px;font-weight:700;cursor:pointer}button.secondary{background:#e8efeb;color:var(--text)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;padding:8px max(8px,env(safe-area-inset-left));z-index:5}
+nav button{background:transparent;color:var(--muted);padding:8px 12px;font-size:12px}nav button.active{color:var(--green);background:var(--accent)}
+.page{display:none}.page.active{display:block}.note{font-size:12px;color:var(--muted);line-height:1.5}
+.workout-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+@media(min-width:600px){main{padding-top:22px}.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>🌿 Hidup Sehat Guru</h1><p id="today"></p></header>
+<main>
+<section id="home" class="page active">
+<div class="card">
+<div class="progress-row"><b>Progress hari ini</b><b id="pct">0%</b></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<p class="note" id="progressText"></p>
+</div>
+<div class="grid">
+<div class="stat"><b id="weightStat">—</b><small>kg terakhir</small></div>
+<div class="stat"><b id="streakStat">0</b><small>hari streak</small></div>
+<div class="stat"><b id="workoutStat">0</b><small>workout bulan ini</small></div>
+<div class="stat"><b id="daysStat">0</b><small>hari tercatat</small></div>
+</div>
+<div class="card"><h2 class="section-title">🌅 Pagi</h2><div id="morning"></div></div>
+<div class="card"><h2 class="section-title">🏫 Saat di Sekolah</h2><div id="school"></div></div>
+<div class="card"><h2 class="section-title">🌙 Sore & Malam</h2><div id="night"></div></div>
+<div class="card"><h2 class="section-title">🎯 Target utama</h2><div id="targets"></div></div>
+</section>
+
+<section id="workout" class="page">
+<div class="card"><h2 class="section-title">🏃 Full-Body Workout</h2>
+<p class="note">Tanpa alat • 15–25 menit • mulai 1 putaran. Jika muncul nyeri tajam, pusing, atau sesak tidak wajar, hentikan latihan.</p>
+<div id="workoutList"></div>
+<div class="actions"><button onclick="completeWorkout()">✓ Tandai workout selesai</button><button class="secondary" onclick="resetWorkout()">Reset</button></div>
+</div>
+<div class="card"><h2 class="section-title">Skala latihan</h2><p>☐ Pemula: 1 putaran<br>☐ Mulai terbiasa: 2 putaran<br>☐ Sudah kuat: 3 putaran</p><p class="note">Istirahat 20–40 detik antar latihan dan 1–2 menit antar putaran.</p></div>
+</section>
+
+<section id="weight" class="page">
+<div class="card"><h2 class="section-title">⚖️ Catat berat badan</h2>
+<input id="weightInput" type="number" step="0.1" min="1" placeholder="Contoh: 95.5">
+<div class="actions"><button onclick="saveWeight()">Simpan hari ini</button></div>
+<p class="note">Tidak perlu menimbang setiap hari; 1–3× per minggu pada kondisi yang sama sudah cukup.</p>
+</div>
+<div class="card"><h2 class="section-title">Riwayat berat badan</h2><div id="weightHistory"></div></div>
+</section>
+
+<section id="progress" class="page">
+<div class="card"><h2 class="section-title">📊 Ringkasan progres</h2><div id="summary"></div></div>
+<div class="card"><h2 class="section-title">Riwayat harian</h2><div id="dailyHistory"></div></div>
+</section>
+</main>
+<nav>
+<button class="active" data-page="home">🏠<br>Hari ini</button>
+<button data-page="workout">🏃<br>Workout</button>
+<button data-page="weight">⚖️<br>Berat</button>
+<button data-page="progress">📊<br>Progres</button>
+</nav>
+<script>
+const tasks={
+morning:["Bangun & minum 1 gelas air putih","Shalat Subuh","Tidak kembali tidur terlalu lama","Sarapan secukupnya: protein + sayur/buah","Tidak minum minuman manis","Jalan ringan 5–10 menit / aktivitas pagi"],
+school:["Shalat Dzuhur","Shalat Ashar","Shalat Dhuha jika memungkinkan","Minum air putih secara berkala","Setiap ±60 menit berdiri/jalan 2–5 menit","Saat mengajar manfaatkan kesempatan untuk berdiri/bergerak","Makan siang: ½ sayur + ¼ protein + ¼ nasi/karbohidrat","Tidak menambah nasi secara otomatis","Hindari gorengan, kue, dan minuman manis berlebihan","Tidak ngemil hanya karena bosan"],
+night:["Shalat Maghrib","Makan malam secukupnya","Utamakan protein + sayuran","Hindari makan besar menjelang tidur","Shalat Isya","Kurangi HP sebelum tidur","Tidur cukup"],
+targets:["Tidak minuman manis","Porsi makan terkendali","Tidak ngemil berlebihan","Aktivitas fisik ≥30 menit","Workout selesai"]
+};
+const workout=[["Marching di tempat","45 detik"],["Chair Squat / Squat dangkal","8–12×"],["Wall Push-Up","8–12×"],["Standing Knee Raise","10×/kaki"],["Glute Bridge","10–15×"],["Bird-Dog","8×/sisi"],["Calf Raise","12–15×"],["Jalan santai pendinginan","3–5 menit"]];
+const key="healthyTeacherV1";
+let data=JSON.parse(localStorage.getItem(key)||'{"days":{},"weights":[],"workouts":{}}');
+const dateKey=()=>new Date().toISOString().slice(0,10);
+function save(){localStorage.setItem(key,JSON.stringify(data))}
+function today(){return dateKey()}
+function renderTasks(id,list){
+ const box=document.getElementById(id);box.innerHTML="";
+ list.forEach((t,i)=>{let k=id+"-"+i;let checked=!!data.days[today()]?.[k];
+ let row=document.createElement("label");row.className="item";
+ row.innerHTML=`<input type="checkbox" ${checked?"checked":""}><span>${t}</span>`;
+ let cb=row.querySelector("input");cb.onchange=()=>{data.days[today()]??={};data.days[today()][k]=cb.checked;save();renderAll()};
+ box.appendChild(row)});
+}
+function renderTargets(){renderTasks("targets",tasks.targets)}
+function renderWorkout(){
+ document.getElementById("workoutList").innerHTML=workout.map(x=>`<div class="workout-row"><span>${x[0]}</span><b>${x[1]}</b></div>`).join("");
+}
+function completeWorkout(){data.workouts[today()]=true;save();renderAll();alert("Workout hari ini dicatat. Mantap!")}
+function resetWorkout(){delete data.workouts[today()];save();renderAll()}
+function allTaskCount(){return Object.values(tasks).reduce((a,x)=>a+x.length,0)}
+function completedToday(){
+ let d=data.days[today()]||{};return Object.values(d).filter(Boolean).length+(data.workouts[today()]?1:0)
+}
+function calcStreak(){
+ let n=0,d=new Date();while(true){let k=d.toISOString().slice(0,10),v=data.days[k],count=v?Object.values(v).filter(Boolean).length:0;
+ if(count===0 && !data.workouts[k]) break;n++;d.setDate(d.getDate()-1);if(n>365)break}return n
+}
+function renderHistory(){
+ let keys=Object.keys(data.days).sort().reverse().slice(0,14);
+ let rows=keys.map(k=>{let c=Object.values(data.days[k]||{}).filter(Boolean).length;return `<tr><td>${k}</td><td>${c}</td><td>${data.workouts[k]?"✓":"—"}</td></tr>`}).join("");
+ document.getElementById("dailyHistory").innerHTML=rows?`<table><tr><th>Tanggal</th><th>Checklist</th><th>Workout</th></tr>${rows}</table>`:"<p class='note'>Belum ada riwayat.</p>";
+}
+function renderWeights(){
+ let arr=[...data.weights].reverse();
+ document.getElementById("weightHistory").innerHTML=arr.length?`<table><tr><th>Tanggal</th><th>Berat</th></tr>${arr.map(x=>`<tr><td>${x.date}</td><td>${x.weight} kg</td></tr>`).join("")}</table>`:"<p class='note'>Belum ada data berat.</p>";
+ document.getElementById("weightStat").textContent=arr[0]?arr[0].weight:"—";
+}
+function saveWeight(){let v=parseFloat(document.getElementById("weightInput").value);if(!v)return alert("Masukkan berat badan terlebih dahulu.");data.weights=data.weights.filter(x=>x.date!==today());data.weights.push({date:today(),weight:v});data.weights.sort((a,b)=>a.date.localeCompare(b.date));save();document.getElementById("weightInput").value="";renderAll();alert("Berat badan tersimpan.")}
+function renderAll(){
+ renderTasks("morning",tasks.morning);renderTasks("school",tasks.school);renderTasks("night",tasks.night);renderTargets();renderWorkout();renderWeights();renderHistory();
+ let pct=Math.round(completedToday()/(allTaskCount()+1)*100);document.getElementById("pct").textContent=pct+"%";document.getElementById("bar").style.width=pct+"%";
+ document.getElementById("progressText").textContent=`${completedToday()} dari ${allTaskCount()+1} target hari ini tercapai.`;
+ document.getElementById("streakStat").textContent=calcStreak();
+ let month=today().slice(0,7);document.getElementById("workoutStat").textContent=Object.keys(data.workouts).filter(x=>x.startsWith(month)).length;
+ document.getElementById("daysStat").textContent=Object.keys({...data.days,...data.workouts}).length;
+ document.getElementById("summary").innerHTML=`<p><b>Hari ini:</b> ${pct}% selesai.</p><p><b>Streak:</b> ${calcStreak()} hari.</p><p><b>Workout bulan ini:</b> ${Object.keys(data.workouts).filter(x=>x.startsWith(month)).length} kali.</p><p><b>Data berat:</b> ${data.weights.length} catatan.</p>`;
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(b.dataset.page).classList.add("active")});
+document.getElementById("today").textContent=new Intl.DateTimeFormat("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(new Date());
+renderAll();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body></html>
